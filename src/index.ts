@@ -1,20 +1,29 @@
 require("dotenv").config();
 import prisma from "./db";
-import express, { Request, Response } from "express";
+import express, { query, Request, Response } from "express";
 import {
   handleError,
   validateId,
-  validateScehma,
+  validateSchema,
   StatusCode,
   handleResponse,
 } from "./utils";
+import type { skip } from "@prisma/client/runtime/library";
 
 export const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.get("/products", async (req: Request, res: Response) => {
-  const data = await prisma.product.findMany();
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  const data = await prisma.product.findMany({
+    skip: (pageNum - 1) * limitNum,
+    take: limitNum,
+  });
   handleResponse(res, StatusCode.OK, data);
 });
 
@@ -33,7 +42,7 @@ app.get("/products/:id", validateId, async (req: Request, res: Response) => {
 
 app.post(
   "/products",
-  validateScehma(false),
+  validateSchema(false),
   async (req: Request, res: Response) => {
     await prisma.product.create({
       data: req.body,
@@ -47,7 +56,7 @@ app.post(
 app.put(
   "/products/:id",
   validateId,
-  validateScehma(true),
+  validateSchema(true),
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     try {

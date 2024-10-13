@@ -26,7 +26,7 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const validateScehma = (partial: boolean) => {
+export const validateSchema = (partial: boolean) => {
   return (req: Request, res: Response, next: NextFunction) => {
     var data;
     if (partial) data = ProductSchema.partial().safeParse(req.body);
